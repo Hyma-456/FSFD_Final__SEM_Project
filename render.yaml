@@ -1,16 +1,37 @@
 services:
+  # 1. Node.js Backend
   - type: web
     name: research-collab-backend
-    env: java
-    buildCommand: ./mvnw clean install -DskipTests
-    startCommand: java -jar target/*.jar
-    rootDir: backend-spring
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    rootDir: backend
     envVars:
-      - key: SPRING_DATASOURCE_URL
+      - key: DB_HOST
         sync: false
-      - key: SPRING_DATASOURCE_USERNAME
+      - key: DB_USER
         sync: false
-      - key: SPRING_DATASOURCE_PASSWORD
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
         sync: false
       - key: PORT
-        value: 8080
+        value: 5000
+
+  # 2. React Frontend (Static Site)
+  - type: static
+    name: research-collab-frontend
+    env: static
+    plan: free
+    buildCommand: npm install && npm run build
+    publishPath: dist
+    headers:
+      - path: /*
+        headers:
+          - key: Cache-Control
+            value: public, max-age=0, must-revalidate
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
