@@ -9,7 +9,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -21,21 +21,26 @@ export default function Login() {
       return;
     }
 
-    // Authenticate user
-    const user = authenticate(email, password);
-    
-    if (user) {
-      // Store current user in session
-      sessionStorage.setItem("currentUser", JSON.stringify(user));
+    try {
+      // Authenticate user via Spring Boot API
+      const user = await authenticate(email, password);
       
-      // Navigate to appropriate dashboard
-      if (user.role === "admin") {
-        navigate("/admin");
+      if (user) {
+        // Store current user in session
+        sessionStorage.setItem("currentUser", JSON.stringify(user));
+        
+        // Navigate to appropriate dashboard
+        if (user.role?.toLowerCase() === "admin") {
+          navigate("/admin");
+        } else {
+          navigate("/researcher");
+        }
       } else {
-        navigate("/researcher");
+        setError("Invalid email or password");
+        setLoading(false);
       }
-    } else {
-      setError("Invalid email or password");
+    } catch {
+      setError("Login failed. Please try again.");
       setLoading(false);
     }
   };

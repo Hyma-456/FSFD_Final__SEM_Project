@@ -1,8 +1,10 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const db = require('./db');
 
+app.use(cors());
 app.use(express.json());
 
 // ✅ Root test route
@@ -46,6 +48,32 @@ app.get('/api/documents', (req, res) => {
     }
     console.log('Documents fetched:', results);
     res.json(results);
+  });
+});
+
+app.post('/api/documents', (req, res) => {
+  const { name, type, size, date, project, content } = req.body;
+  const sql = 'INSERT INTO documents (name, type, size, date, project, content) VALUES (?, ?, ?, ?, ?, ?)';
+  db.query(sql, [name, type, size, date, project, content], (err, result) => {
+    if (err) {
+      console.error('SQL Error object:', err);
+      res.status(500).send('Error saving document');
+      return;
+    }
+    res.json({ id: result.insertId, name, type, size, date, project, content });
+  });
+});
+
+app.delete('/api/documents/:id', (req, res) => {
+  const { id } = req.params;
+  const sql = 'DELETE FROM documents WHERE id = ?';
+  db.query(sql, [id], (err, result) => {
+    if (err) {
+      console.error('SQL Error object:', err);
+      res.status(500).send('Error deleting document');
+      return;
+    }
+    res.json({ message: 'Document deleted', id });
   });
 });
 

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthRole, saveUser } from "../utils/auth";
 
@@ -10,8 +10,9 @@ export default function Signup() {
   const [role, setRole] = useState<AuthRole>("researcher");
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
     setSuccess("");
@@ -21,14 +22,22 @@ export default function Signup() {
       return;
     }
 
-    const result = saveUser({ name: name.trim(), email: email.trim(), password, role });
-    if (!result.success) {
-      setError(result.error ?? "Unable to create the account.");
-      return;
-    }
+    setLoading(true);
 
-    setSuccess("Account created successfully. Redirecting to login...");
-    setTimeout(() => navigate("/"), 1200);
+    try {
+      const result = await saveUser({ name: name.trim(), email: email.trim(), password, role });
+      if (!result.success) {
+        setError(result.error ?? "Unable to create the account.");
+        setLoading(false);
+        return;
+      }
+
+      setSuccess("Account created successfully. Redirecting to login...");
+      setTimeout(() => navigate("/"), 1200);
+    } catch {
+      setError("Signup failed. Please try again.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -49,6 +58,7 @@ export default function Signup() {
               onChange={(event) => setName(event.target.value)}
               className="auth-input"
               placeholder="Jane Doe"
+              disabled={loading}
             />
           </div>
 
@@ -61,6 +71,7 @@ export default function Signup() {
               onChange={(event) => setEmail(event.target.value)}
               className="auth-input"
               placeholder="jane@example.com"
+              disabled={loading}
             />
           </div>
 
@@ -73,6 +84,7 @@ export default function Signup() {
               onChange={(event) => setPassword(event.target.value)}
               className="auth-input"
               placeholder="Create a secure password"
+              disabled={loading}
             />
           </div>
 
@@ -83,6 +95,7 @@ export default function Signup() {
               value={role}
               onChange={(event) => setRole(event.target.value as AuthRole)}
               className="auth-input"
+              disabled={loading}
             >
               <option value="researcher">Researcher</option>
               <option value="admin">Admin</option>
@@ -90,8 +103,8 @@ export default function Signup() {
           </div>
 
           <div className="auth-actions">
-            <button className="auth-button" type="submit">
-              Sign up
+            <button className="auth-button" type="submit" disabled={loading}>
+              {loading ? "Creating account..." : "Sign up"}
             </button>
             <Link className="auth-link" to="/">
               Already have an account?
