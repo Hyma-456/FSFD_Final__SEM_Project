@@ -1,7 +1,7 @@
 services:
   # 1. Node.js Backend
   - type: web
-    name: research-collab-backend
+    name: research-collab-api-v1
     env: node
     plan: free
     buildCommand: npm install

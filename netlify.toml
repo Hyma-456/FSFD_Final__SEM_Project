@@ -5,7 +5,7 @@
 # Proxy API requests to the Render backend
 [[redirects]]
   from = "/api/*"
-  to = "https://research-collab-backend.onrender.com/api/:splat"
+  to = "https://research-collab-api-v1.onrender.com/api/:splat"
   status = 200
   force = true
 
